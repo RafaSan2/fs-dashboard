@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Dashboard de Productividad Operacional - Agosto 2026</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Top progress bar for auto-rotation -->
+    <div class="rotation-progress-bar" id="rotation-progress"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-gauge-high brand-icon"></i>
+                <div class="brand-text">
+                    <h1>ProdOps</h1>
+                    <span>Back Office Sync</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#overview" class="menu-item active" id="menu-overview">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Vista General</span>
+                </a>
+                <a href="#cilindros" class="menu-item" id="menu-cilindros">
+                    <i class="fa-solid fa-circle-nodes"></i>
+                    <span>Mto. Cilindros</span>
+                </a>
+                <a href="#ph" class="menu-item" id="menu-ph">
+                    <i class="fa-solid fa-flask-vial"></i>
+                    <span>Pruebas PH</span>
+                </a>
+                <a href="#settings" class="menu-item" id="menu-settings">
+                    <i class="fa-solid fa-gears"></i>
+                    <span>Conexión de Datos</span>
+                </a>
+            </nav>
+
+            <!-- Sidebar footer removed -->
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h2>Dashboard de Productividad</h2>
+                    <p>Monitoreo diario de procesos operativos de Mantenimiento y Calidad</p>
+                </div>
+                <div class="header-actions">
+                    <!-- Rotation Pause/Play indicator badge -->
+                    <div class="rotation-badge" id="rotation-badge" title="Ciclo automático de 15 segundos activo">
+                        <i class="fa-solid fa-arrows-spin fa-spin"></i>
+                        <span>Auto-Rotación</span>
+                    </div>
+                    <div class="report-period">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span id="report-period-text">Agosto 2026</span>
+                    </div>
+                    <!-- Sincronizar button removed -->
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overview" class="dashboard-section active-section">
+                <!-- KPI Banner Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card" id="kpi-cilindros-prod">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Productividad Cilindros</span>
+                            <div class="kpi-icon icon-blue"><i class="fa-solid fa-circle-nodes"></i></div>
+                        </div>
+                        <div class="kpi-value" id="kpi-cil-value">88.5%</div>
+                        <div class="kpi-footer">
+                            <span class="trend-indicator text-up" id="kpi-cil-trend"><i class="fa-solid fa-chart-simple"></i> Eficiencia Cil</span>
+                            <span class="kpi-subtext">Prod. Operador Caín</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" id="kpi-ph-tests">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Pruebas PH del Mes</span>
+                            <div class="kpi-icon icon-purple"><i class="fa-solid fa-flask-vial"></i></div>
+                        </div>
+                        <div class="kpi-value" id="kpi-ph-value">1,398</div>
+                        <div class="kpi-footer">
+                            <span class="trend-indicator text-up" id="kpi-ph-trend"><i class="fa-solid fa-clock-rotate-left"></i> vs Julio (1,273)</span>
+                            <span class="kpi-subtext">Operador L. Rocha</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" id="kpi-ph-efficiency">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Tasa Pruebas PH</span>
+                            <div class="kpi-icon icon-teal"><i class="fa-solid fa-bolt"></i></div>
+                        </div>
+                        <div class="kpi-value" id="kpi-ph-rate-value">7.39 <span class="unit">/ hr</span></div>
+                        <div class="kpi-footer">
+                            <span class="trend-indicator text-warning" id="kpi-ph-rate-trend"><i class="fa-solid fa-triangle-exclamation"></i> Meta: 10.0 / hr</span>
+                            <span class="kpi-subtext">Cumplimiento del 73.9%</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" id="kpi-lost-hours">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Tiempo Perdido Mto</span>
+                            <div class="kpi-icon icon-orange"><i class="fa-solid fa-hourglass-end"></i></div>
+                        </div>
+                        <div class="kpi-value" id="kpi-lost-hours-value">22.4 <span class="unit">hrs</span></div>
+                        <div class="kpi-footer">
+                            <span class="trend-indicator text-up" id="kpi-lost-days-value"><i class="fa-solid fa-calendar-minus"></i> 2.8 días perdidos</span>
+                            <span class="kpi-subtext">Prom: 0.9 hrs/día</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Overview Chart & Sub charts layout -->
+                <div class="overview-content-layout">
+                    <div class="chart-container-large card">
+                        <div class="card-header">
+                            <h3>Comparativa de Productividad Diaria</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="overviewChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="grid-2col">
+                        <div class="card">
+                            <div class="card-header flex-header">
+                                <div>
+                                    <h3>Mantenimiento de Cilindros</h3>
+                                    <p>Distribución de tareas del mes</p>
+                                </div>
+                                <span class="badge badge-blue">Agosto</span>
+                            </div>
+                            <div class="chart-wrapper-small">
+                                <canvas id="cilDistributionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header flex-header">
+                                <div>
+                                    <h3>Desempeño Pruebas PH</h3>
+                                    <p>Rendimiento por hora acumulado L. Rocha</p>
+                                </div>
+                                <span class="badge badge-purple">Agosto</span>
+                            </div>
+                            <div class="chart-wrapper-small">
+                                <canvas id="phPerformanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cilindros Section -->
+            <section id="cilindros" class="dashboard-section">
+                <div class="grid-2col-unequal">
+                    <!-- Left: Main Chart & Daily Details -->
+                    <div class="card main-section-card">
+                        <div class="card-header">
+                            <h3>Productividad Diaria y Tiempos de Cilindros</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="cilDailyChart"></canvas>
+                        </div>
+
+                        <div class="data-table-container">
+                            <table class="data-table" id="table-cilindros">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Cambios Válvula</th>
+                                        <th>Devalvulado</th>
+                                        <th>Valvulado</th>
+                                        <th>Pulido</th>
+                                        <th>T. Estándar (hr)</th>
+                                        <th>T. Trabajo (hr)</th>
+                                        <th>Productividad</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-cilindros">
+                                    <!-- Dynamic rows from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Cylinder Specific KPIs & Summary info -->
+                    <div class="vertical-cards">
+                        <div class="card highlight-card">
+                            <div class="card-header">
+                                <span class="highlight-pre">OPERADOR MTO</span>
+                                <h3>Métricas de L. Rocha en Cilindros</h3>
+                            </div>
+                            <div class="metric-block-list">
+                                <div class="metric-row">
+                                    <div class="metric-label">Cilindros Trabajados:</div>
+                                    <div class="metric-val" id="val-rocha-cil">1,850 PH</div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-label">Tiempo por PH:</div>
+                                    <div class="metric-val" id="val-rocha-ph-time">6.0 min</div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-label">Tiempo Promedio Válvulas:</div>
+                                    <div class="metric-val" id="val-rocha-valv-time">2.8 min</div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-label">Equivalente PH:</div>
+                                    <div class="metric-val" id="val-rocha-ph-equiv">925 PH equiv</div>
+                                </div>
+                            </div>
+                            <div class="highlight-footer">
+                                <i class="fa-solid fa-circle-info"></i> Nota: Las pruebas de PH trabajadas por Rocha son integradas a su indicador general de productividad de PH.
+                            </div>
+                        </div>
+
+                        <div class="card summary-card">
+                            <div class="card-header">
+                                <h3>Resumen Mensual de Cilindros</h3>
+                            </div>
+                            <div class="progress-list">
+                                <div class="progress-item">
+                                    <div class="progress-label">
+                                        <span>Productividad Promedio (Caín)</span>
+                                        <span id="cil-prod-1-percent">79.6%</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar bar-blue" id="cil-prod-1-bar" style="width: 79.6%"></div>
+                                    </div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-label">
+                                        <span>Productividad Promedio (Ajustada)</span>
+                                        <span id="cil-prod-2-percent">88.5%</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar bar-teal" id="cil-prod-2-bar" style="width: 88.5%"></div>
+                                    </div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-label">
+                                        <span>Cumplimiento Devalvulados</span>
+                                        <span>100%</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar bar-green" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="monthly-totals">
+                                <div class="total-badge">
+                                    <span class="total-label">Objetivo Devalvulados</span>
+                                    <span class="total-num" id="val-cil-obj-devalv">1,200</span>
+                                </div>
+                                <div class="total-badge">
+                                    <span class="total-label">Horas Perdidas Prom.</span>
+                                    <span class="total-num" id="val-cil-lost-hours-prom">0.9 hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PH Section -->
+            <section id="ph" class="dashboard-section">
+                <div class="grid-2col-unequal">
+                    <!-- Left: Main Chart & Daily Details -->
+                    <div class="card main-section-card">
+                        <div class="card-header">
+                            <h3>Productividad Diaria y Pruebas PH</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="phDailyChart"></canvas>
+                        </div>
+
+                        <div class="data-table-container">
+                            <table class="data-table" id="table-ph">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Pruebas Realizadas</th>
+                                        <th>Horas en Válvula</th>
+                                        <th>Horas de Paro (Mto)</th>
+                                        <th>Capacitación (hr)</th>
+                                        <th>T. Estándar (hr)</th>
+                                        <th>T. Productivo (hr)</th>
+                                        <th>Productividad</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-ph">
+                                    <!-- Dynamic rows from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: PH Specific KPIs & Monthly Comparison -->
+                    <div class="vertical-cards">
+                        <div class="card highlight-card highlight-purple">
+                            <div class="card-header">
+                                <span class="highlight-pre">PRODUCTIVIDAD PH</span>
+                                <h3>Cumplimiento de la Meta de Pruebas</h3>
+                            </div>
+                            <div class="ph-radial-summary">
+                                <div class="rate-large">
+                                    <span class="rate-number" id="ph-rate-metric">7.39</span>
+                                    <span class="rate-unit">pruebas / hora</span>
+                                </div>
+                                <div class="rate-meta">
+                                    <span>Meta Estándar: <strong>10.0 / hr</strong></span>
+                                </div>
+                            </div>
+                            <div class="metric-block-list">
+                                <div class="metric-row">
+                                    <div class="metric-label">Pruebas Totales:</div>
+                                    <div class="metric-val" id="val-ph-total-tests">1,398</div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-label">Horas Invertidas:</div>
+                                    <div class="metric-val" id="val-ph-total-hours">189.2 hrs</div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-label">Porcentaje Cumplimiento:</div>
+                                    <div class="metric-val" id="val-ph-cumplimiento">73.9%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card summary-card">
+                            <div class="card-header">
+                                <h3>Comparativa Histórica Mensual</h3>
+                                <p>Pruebas realizadas: Julio vs Agosto 2026</p>
+                            </div>
+                            <div class="comparison-bar-chart">
+                                <div class="comp-row">
+                                    <div class="comp-label">Julio (Mes Anterior)</div>
+                                    <div class="comp-bar-container">
+                                        <div class="comp-bar bar-purple-light" id="comp-bar-july" style="width: 91%"></div>
+                                        <span class="comp-val" id="comp-val-july">1,273</span>
+                                    </div>
+                                </div>
+                                <div class="comp-row">
+                                    <div class="comp-label">Agosto (Mes Actual)</div>
+                                    <div class="comp-bar-container">
+                                        <div class="comp-bar bar-purple" id="comp-bar-august" style="width: 100%"></div>
+                                        <span class="comp-val" id="comp-val-august">1,398</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="monthly-totals">
+                                <div class="total-badge" style="width: 100%;">
+                                    <span class="total-label">Observaciones</span>
+                                    <span class="total-desc">Aumento general en el desempeño de las pruebas de PH.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="dashboard-section">
+                <div class="card main-section-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-gears icon-accent"></i> Conexión de Datos (Back Office)</h3>
+                        <p>Configure la fuente de datos externa (Google Sheets) para actualizar la información de forma automática.</p>
+                    </div>
+
+                    <div class="settings-body">
+                        <div class="connection-selector">
+                            <button class="selector-tab active" id="tab-google-sheets">
+                                <i class="fa-brands fa-google-drive"></i> Google Sheets (Recomendado)
+                            </button>
+                            <button class="selector-tab" id="tab-sharepoint" disabled>
+                                <i class="fa-brands fa-microsoft"></i> SharePoint (Próximamente)
+                            </button>
+                        </div>
+
+                        <div class="setup-panel" id="panel-sheets-setup">
+                            <div class="instructions-card">
+                                <h4><i class="fa-solid fa-circle-info"></i> Pasos para conectar su Google Sheet:</h4>
+                                <ol class="instructions-list">
+                                    <li>Abra su hoja de cálculo de Google Sheets con las dos pestañas de control.</li>
+                                    <li>Vaya al menú superior: <strong>Archivo -> Compartir -> Publicar en la Web</strong>.</li>
+                                    <li>En la ventana de publicación:
+                                        <ul>
+                                            <li>Seleccione la pestaña de <strong>Cilindros (Control Mensual Agosto)</strong> y elija formato <strong>Valores separados por comas (.csv)</strong>.</li>
+                                            <li>Copie el enlace generado y péguelo en el campo <strong>CSV de Cilindros</strong> abajo.</li>
+                                            <li>Haga lo mismo para la pestaña de <strong>Pruebas PH (Control Mensual de Agosto)</strong>, copiando el enlace en el campo <strong>CSV de PH</strong>.</li>
+                                        </ul>
+                                    </li>
+                                    <li>Presione <strong>"Guardar y Conectar"</strong>. ¡El dashboard se actualizará dinámicamente usando estas fuentes!</li>
+                                </ol>
+                            </div>
+
+                            <form id="form-data-connection" class="connection-form">
+                                <div class="form-group">
+                                    <label for="input-url-cilindros">
+                                        <i class="fa-solid fa-circle-nodes"></i> URL del CSV de Mantenimiento de Cilindros
+                                    </label>
+                                    <input type="url" id="input-url-cilindros" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=XXXX&output=csv" autocomplete="off">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="input-url-ph">
+                                        <i class="fa-solid fa-flask-vial"></i> URL del CSV de Pruebas de PH
+                                    </label>
+                                    <input type="url" id="input-url-ph" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=YYYY&output=csv" autocomplete="off">
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-success" id="btn-save-connection">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Guardar y Conectar
+                                    </button>
+                                    <button type="button" class="btn-danger-outline" id="btn-reset-connection">
+                                        <i class="fa-solid fa-trash-can"></i> Restablecer a Modo Local (Excel)
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="notification-toast">
+        <i class="fa-solid fa-circle-check toast-icon" id="toast-icon"></i>
+        <div class="toast-content">
+            <h4 id="toast-title">Notificación</h4>
+            <p id="toast-message">Datos sincronizados con éxito.</p>
+        </div>
+    </div>
+
+    <!-- Load the initial Excel data script -->
+    <script src="data.js"></script>
+    <!-- Load the main logic javascript -->
+    <script src="index.js"></script>
+</body>
+</html>
