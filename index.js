@@ -30,8 +30,10 @@ async function initApp() {
     const savedPhUrl = localStorage.getItem(STORAGE_KEY_PH);
     
     if (savedCilUrl && savedPhUrl) {
-        document.getElementById('input-url-cilindros').value = savedCilUrl;
-        document.getElementById('input-url-ph').value = savedPhUrl;
+        const inputCil = document.getElementById('input-url-cilindros');
+        const inputPh = document.getElementById('input-url-ph');
+        if (inputCil) inputCil.value = savedCilUrl;
+        if (inputPh) inputPh.value = savedPhUrl;
         
         try {
             showToast('Conectando con Google Sheets...', 'syncing', 'Sincronización');
@@ -224,6 +226,8 @@ function setupConnectionForm() {
     const form = document.getElementById('form-data-connection');
     const btnReset = document.getElementById('btn-reset-connection');
     
+    if (!form || !btnReset) return;
+    
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -300,25 +304,66 @@ function renderDashboard() {
  * Populate KPI widgets at the top
  */
 function renderKPIs() {
-    // Update month and year dynamically in header
+    // Update month and year dynamically in header and badges
     const monthFullNames = {
         'Ene': 'Enero', 'Feb': 'Febrero', 'Mar': 'Marzo', 'Abr': 'Abril',
         'May': 'Mayo', 'Jun': 'Junio', 'Jul': 'Julio', 'Ago': 'Agosto',
         'Sep': 'Septiembre', 'Oct': 'Octubre', 'Nov': 'Noviembre', 'Dic': 'Diciembre'
     };
+    const monthList = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    
     let reportDateStr = 'Agosto 2026';
+    let reportMonthOnly = 'Agosto';
+    let reportYear = '2026';
+    
     if (appData.metadata && appData.metadata.fecha_reporte) {
-        const parts = appData.metadata.fecha_reporte.split(' ');
+        const parts = appData.metadata.fecha_reporte.trim().split(' ');
         if (parts.length === 2) {
-            const fullMonth = monthFullNames[parts[0]] || parts[0];
-            reportDateStr = `${fullMonth} ${parts[1]}`;
+            reportMonthOnly = monthFullNames[parts[0]] || parts[0];
+            reportYear = parts[1];
+            reportDateStr = `${reportMonthOnly} ${reportYear}`;
         } else {
             reportDateStr = appData.metadata.fecha_reporte;
+            reportMonthOnly = parts[0];
+            if (parts[1]) reportYear = parts[1];
         }
     }
+    
+    // Calculate previous month name
+    const currentMonthIdx = monthList.findIndex(m => m.toLowerCase().startsWith(reportMonthOnly.toLowerCase().substring(0, 3)));
+    let prevMonthName = 'Julio';
+    if (currentMonthIdx !== -1) {
+        const prevMonthIdx = (currentMonthIdx - 1 + 12) % 12;
+        prevMonthName = monthList[prevMonthIdx];
+    }
+
     const reportPeriodEl = document.getElementById('report-period-text');
     if (reportPeriodEl) {
         reportPeriodEl.innerText = reportDateStr;
+    }
+    
+    // Update Vista General badges dynamically
+    const cilMonthBadge = document.getElementById('overview-cil-month-badge');
+    if (cilMonthBadge) {
+        cilMonthBadge.innerText = reportMonthOnly;
+    }
+    const phMonthBadge = document.getElementById('overview-ph-month-badge');
+    if (phMonthBadge) {
+        phMonthBadge.innerText = reportMonthOnly;
+    }
+
+    // Update PH comparison title and labels dynamically
+    const phComparisonTitle = document.getElementById('ph-comparison-title');
+    if (phComparisonTitle) {
+        phComparisonTitle.innerText = `Pruebas realizadas: ${prevMonthName} vs ${reportMonthOnly} ${reportYear}`;
+    }
+    const phCompLabelPrev = document.getElementById('ph-comp-label-prev');
+    if (phCompLabelPrev) {
+        phCompLabelPrev.innerText = `${prevMonthName} (Mes Anterior)`;
+    }
+    const phCompLabelCurr = document.getElementById('ph-comp-label-curr');
+    if (phCompLabelCurr) {
+        phCompLabelCurr.innerText = `${reportMonthOnly} (Mes Actual)`;
     }
 
     const prodVal = appData.cilindros.summary.prod_mensual_2 || appData.cilindros.summary.prod_mensual_1;
@@ -337,6 +382,11 @@ function renderKPIs() {
     const augustTests = appData.ph.summary.comparativa_agosto || phTotal;
     document.getElementById('comp-val-july').innerText = formatNumber(julyTests);
     document.getElementById('comp-val-august').innerText = formatNumber(augustTests);
+    
+    const kpiPhTrend = document.getElementById('kpi-ph-trend');
+    if (kpiPhTrend) {
+        kpiPhTrend.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> vs ${prevMonthName} (${formatNumber(julyTests)})`;
+    }
     
     const maxVal = Math.max(julyTests, augustTests);
     document.getElementById('comp-bar-july').style.width = maxVal > 0 ? `${(julyTests / maxVal) * 100}%` : '0%';
@@ -957,11 +1007,12 @@ function formatNumber(val) {
 
 function formatDisplayDate(dateStr) {
     if (!dateStr) return '';
-    if (dateStr.includes('-')) {
-        const parts = dateStr.split('-');
+    const str = String(dateStr);
+    if (str.includes('-')) {
+        const parts = str.split('-');
         return `${parts[2]}/${parts[1]}`;
     }
-    return dateStr;
+    return str;
 }
 
 function getPercentColor(val) {

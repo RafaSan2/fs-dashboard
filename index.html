@@ -45,10 +45,7 @@
                     <i class="fa-solid fa-flask-vial"></i>
                     <span>Pruebas PH</span>
                 </a>
-                <a href="#settings" class="menu-item" id="menu-settings">
-                    <i class="fa-solid fa-gears"></i>
-                    <span>Conexión de Datos</span>
-                </a>
+
             </nav>
 
             <!-- Sidebar footer removed -->
@@ -147,7 +144,7 @@
                                     <h3>Mantenimiento de Cilindros</h3>
                                     <p>Distribución de tareas del mes</p>
                                 </div>
-                                <span class="badge badge-blue">Agosto</span>
+                                <span class="badge badge-blue" id="overview-cil-month-badge">Agosto</span>
                             </div>
                             <div class="chart-wrapper-small">
                                 <canvas id="cilDistributionChart"></canvas>
@@ -159,7 +156,7 @@
                                     <h3>Desempeño Pruebas PH</h3>
                                     <p>Rendimiento por hora acumulado L. Rocha</p>
                                 </div>
-                                <span class="badge badge-purple">Agosto</span>
+                                <span class="badge badge-purple" id="overview-ph-month-badge">Agosto</span>
                             </div>
                             <div class="chart-wrapper-small">
                                 <canvas id="phPerformanceChart"></canvas>
@@ -348,18 +345,18 @@
                         <div class="card summary-card">
                             <div class="card-header">
                                 <h3>Comparativa Histórica Mensual</h3>
-                                <p>Pruebas realizadas: Julio vs Agosto 2026</p>
+                                <p id="ph-comparison-title">Pruebas realizadas: Julio vs Agosto 2026</p>
                             </div>
                             <div class="comparison-bar-chart">
                                 <div class="comp-row">
-                                    <div class="comp-label">Julio (Mes Anterior)</div>
+                                    <div class="comp-label" id="ph-comp-label-prev">Julio (Mes Anterior)</div>
                                     <div class="comp-bar-container">
                                         <div class="comp-bar bar-purple-light" id="comp-bar-july" style="width: 91%"></div>
                                         <span class="comp-val" id="comp-val-july">1,273</span>
                                     </div>
                                 </div>
                                 <div class="comp-row">
-                                    <div class="comp-label">Agosto (Mes Actual)</div>
+                                    <div class="comp-label" id="ph-comp-label-curr">Agosto (Mes Actual)</div>
                                     <div class="comp-bar-container">
                                         <div class="comp-bar bar-purple" id="comp-bar-august" style="width: 100%"></div>
                                         <span class="comp-val" id="comp-val-august">1,398</span>
@@ -377,69 +374,7 @@
                 </div>
             </section>
 
-            <!-- Settings Section -->
-            <section id="settings" class="dashboard-section">
-                <div class="card main-section-card">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-gears icon-accent"></i> Conexión de Datos (Back Office)</h3>
-                        <p>Configure la fuente de datos externa (Google Sheets) para actualizar la información de forma automática.</p>
-                    </div>
 
-                    <div class="settings-body">
-                        <div class="connection-selector">
-                            <button class="selector-tab active" id="tab-google-sheets">
-                                <i class="fa-brands fa-google-drive"></i> Google Sheets (Recomendado)
-                            </button>
-                            <button class="selector-tab" id="tab-sharepoint" disabled>
-                                <i class="fa-brands fa-microsoft"></i> SharePoint (Próximamente)
-                            </button>
-                        </div>
-
-                        <div class="setup-panel" id="panel-sheets-setup">
-                            <div class="instructions-card">
-                                <h4><i class="fa-solid fa-circle-info"></i> Pasos para conectar su Google Sheet:</h4>
-                                <ol class="instructions-list">
-                                    <li>Abra su hoja de cálculo de Google Sheets con las dos pestañas de control.</li>
-                                    <li>Vaya al menú superior: <strong>Archivo -> Compartir -> Publicar en la Web</strong>.</li>
-                                    <li>En la ventana de publicación:
-                                        <ul>
-                                            <li>Seleccione la pestaña de <strong>Cilindros (Control Mensual Agosto)</strong> y elija formato <strong>Valores separados por comas (.csv)</strong>.</li>
-                                            <li>Copie el enlace generado y péguelo en el campo <strong>CSV de Cilindros</strong> abajo.</li>
-                                            <li>Haga lo mismo para la pestaña de <strong>Pruebas PH (Control Mensual de Agosto)</strong>, copiando el enlace en el campo <strong>CSV de PH</strong>.</li>
-                                        </ul>
-                                    </li>
-                                    <li>Presione <strong>"Guardar y Conectar"</strong>. ¡El dashboard se actualizará dinámicamente usando estas fuentes!</li>
-                                </ol>
-                            </div>
-
-                            <form id="form-data-connection" class="connection-form">
-                                <div class="form-group">
-                                    <label for="input-url-cilindros">
-                                        <i class="fa-solid fa-circle-nodes"></i> URL del CSV de Mantenimiento de Cilindros
-                                    </label>
-                                    <input type="url" id="input-url-cilindros" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=XXXX&output=csv" autocomplete="off">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="input-url-ph">
-                                        <i class="fa-solid fa-flask-vial"></i> URL del CSV de Pruebas de PH
-                                    </label>
-                                    <input type="url" id="input-url-ph" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=YYYY&output=csv" autocomplete="off">
-                                </div>
-
-                                <div class="form-actions">
-                                    <button type="submit" class="btn-success" id="btn-save-connection">
-                                        <i class="fa-solid fa-cloud-arrow-up"></i> Guardar y Conectar
-                                    </button>
-                                    <button type="button" class="btn-danger-outline" id="btn-reset-connection">
-                                        <i class="fa-solid fa-trash-can"></i> Restablecer a Modo Local (Excel)
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
 
@@ -455,6 +390,6 @@
     <!-- Load the initial Excel data script -->
     <script src="data.js"></script>
     <!-- Load the main logic javascript -->
-    <script src="index.js"></script>
+    <script src="index.js?v=2"></script>
 </body>
 </html>
