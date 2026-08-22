@@ -351,6 +351,10 @@ function renderKPIs() {
     if (phMonthBadge) {
         phMonthBadge.innerText = reportMonthOnly;
     }
+    const valvMonthBadge = document.getElementById('overview-valv-month-badge');
+    if (valvMonthBadge) {
+        valvMonthBadge.innerText = reportMonthOnly;
+    }
 
     // Update PH comparison title and labels dynamically
     const phComparisonTitle = document.getElementById('ph-comparison-title');
@@ -406,17 +410,70 @@ function renderKPIs() {
     const lostHours = appData.cilindros.summary.total_horas_perdidas;
     const lostDays = appData.cilindros.summary.total_dias_perdidos;
     const lostHoursProm = appData.cilindros.summary.prom_horas_perdidas;
-    document.getElementById('kpi-lost-hours-value').innerHTML = `${lostHours.toFixed(1)} <span class="unit">hrs</span>`;
-    document.getElementById('kpi-lost-days-value').innerHTML = `<i class="fa-solid fa-calendar-minus"></i> ${lostDays.toFixed(1)} días`;
-    document.getElementById('kpi-lost-hours').querySelector('.kpi-subtext').innerText = `Promedio: ${lostHoursProm.toFixed(1)} hrs/d`;
     
-    document.getElementById('val-rocha-cil').innerText = `${appData.cilindros.summary.rocha_cil_trabajados} PH`;
-    document.getElementById('val-rocha-ph-time').innerText = `${appData.cilindros.summary.rocha_tiempo_ph} min`;
-    document.getElementById('val-rocha-valv-time').innerText = `${appData.cilindros.summary.rocha_tiempo_prom_valvulas} min`;
-    document.getElementById('val-rocha-ph-equiv').innerText = `${appData.cilindros.summary.rocha_ph_equiv} PH equiv`;
+    const kpiLostHoursVal = document.getElementById('kpi-lost-hours-value');
+    if (kpiLostHoursVal) kpiLostHoursVal.innerHTML = `${lostHours.toFixed(1)} <span class="unit">hrs</span>`;
+    const kpiLostDaysVal = document.getElementById('kpi-lost-days-value');
+    if (kpiLostDaysVal) kpiLostDaysVal.innerHTML = `<i class="fa-solid fa-calendar-minus"></i> ${lostDays.toFixed(1)} días`;
+    const kpiLostHoursCard = document.getElementById('kpi-lost-hours');
+    if (kpiLostHoursCard) kpiLostHoursCard.querySelector('.kpi-subtext').innerText = `Promedio: ${lostHoursProm.toFixed(1)} hrs/d`;
     
-    document.getElementById('val-cil-obj-devalv').innerText = appData.cilindros.summary.objetivo_devalvulados;
-    document.getElementById('val-cil-lost-hours-prom').innerText = `${lostHoursProm.toFixed(1)} hrs`;
+    const valRochaCil = document.getElementById('val-rocha-cil');
+    if (valRochaCil) valRochaCil.innerText = `${appData.cilindros.summary.rocha_cil_trabajados} PH`;
+    const valRochaPhTime = document.getElementById('val-rocha-ph-time');
+    if (valRochaPhTime) valRochaPhTime.innerText = `${appData.cilindros.summary.rocha_tiempo_ph} min`;
+    const valRochaValvTime = document.getElementById('val-rocha-valv-time');
+    if (valRochaValvTime) valRochaValvTime.innerText = `${appData.cilindros.summary.rocha_tiempo_prom_valvulas} min`;
+    const valRochaPhEquiv = document.getElementById('val-rocha-ph-equiv');
+    if (valRochaPhEquiv) valRochaPhEquiv.innerText = `${appData.cilindros.summary.rocha_ph_equiv} PH equiv`;
+    
+    const valCilObjDevalv = document.getElementById('val-cil-obj-devalv');
+    if (valCilObjDevalv) valCilObjDevalv.innerText = appData.cilindros.summary.objetivo_devalvulados;
+    const valCilLostHoursProm = document.getElementById('val-cil-lost-hours-prom');
+    if (valCilLostHoursProm) valCilLostHoursProm.innerText = `${lostHoursProm.toFixed(1)} hrs`;
+
+    // Sincronizar comparativa histórica de cilindros
+    const cilPrev = appData.cilindros.summary.comparativa_anterior || 0;
+    const cilCurr = appData.cilindros.summary.comparativa_actual || 0;
+    
+    const compValCilPrev = document.getElementById('comp-val-cil-prev');
+    if (compValCilPrev) compValCilPrev.innerText = formatNumber(cilPrev);
+    const compValCilCurr = document.getElementById('comp-val-cil-curr');
+    if (compValCilCurr) compValCilCurr.innerText = formatNumber(cilCurr);
+
+    const cilComparisonTitle = document.getElementById('cil-comparison-title');
+    if (cilComparisonTitle) {
+        cilComparisonTitle.innerText = `Cilindros trabajados: ${prevMonthName} vs ${reportMonthOnly} ${reportYear}`;
+    }
+    const cilCompLabelPrev = document.getElementById('cil-comp-label-prev');
+    if (cilCompLabelPrev) {
+        cilCompLabelPrev.innerText = `${prevMonthName} (Mes Anterior)`;
+    }
+    const cilCompLabelCurr = document.getElementById('cil-comp-label-curr');
+    if (cilCompLabelCurr) {
+        cilCompLabelCurr.innerText = `${reportMonthOnly} (Mes Actual)`;
+    }
+    
+    const maxCilVal = Math.max(cilPrev, cilCurr);
+    const compBarCilPrev = document.getElementById('comp-bar-cil-prev');
+    if (compBarCilPrev) {
+        compBarCilPrev.style.width = maxCilVal > 0 ? `${(cilPrev / maxCilVal) * 100}%` : '0%';
+    }
+    const compBarCilCurr = document.getElementById('comp-bar-cil-curr');
+    if (compBarCilCurr) {
+        compBarCilCurr.style.width = maxCilVal > 0 ? `${(cilCurr / maxCilVal) * 100}%` : '0%';
+    }
+    
+    const cilObsEl = document.getElementById('cil-comparison-obs');
+    if (cilObsEl) {
+        if (cilCurr > cilPrev) {
+            cilObsEl.innerText = "Incremento en las tareas de mantenimiento de cilindros respecto al mes anterior.";
+        } else if (cilCurr < cilPrev) {
+            cilObsEl.innerText = "Disminución en las tareas de mantenimiento de cilindros respecto al mes anterior.";
+        } else {
+            cilObsEl.innerText = "Productividad de mantenimiento estable en comparación al mes anterior.";
+        }
+    }
 }
 
 /**
@@ -620,13 +677,9 @@ function initOrUpdateCharts() {
     // 2. Chart Cilindros distribution doughnut chart
     const ctxCilDist = document.getElementById('cilDistributionChart').getContext('2d');
     const totalActs = {
-        'Válvulas': sumArray(appData.cilindros.activities.cambios_valvula),
-        'Devalvulado': sumArray(appData.cilindros.activities.devalvulado),
         'Valvulado': sumArray(appData.cilindros.activities.valvulado),
-        'Pulido': sumArray(appData.cilindros.activities.pulido),
-        'Disco': sumArray(appData.cilindros.activities.cambio_disco),
-        'Revisión': sumArray(appData.cilindros.activities.revision_interna),
-        'Lavado': sumArray(appData.cilindros.activities.lavado_contaminados)
+        'Devalvulado': sumArray(appData.cilindros.activities.devalvulado),
+        'Cambio de Válvula': sumArray(appData.cilindros.activities.cambios_valvula)
     };
     
     charts.cilDist = new Chart(ctxCilDist, {
@@ -680,6 +733,56 @@ function initOrUpdateCharts() {
                     label: 'Meta (10/hr)',
                     data: phTargetRate,
                     borderColor: '#f59e0b',
+                    borderWidth: 1.5,
+                    borderDash: [4, 4],
+                    pointStyle: 'none',
+                    fill: false,
+                    type: 'line',
+                    order: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { boxWidth: 8, font: { size: 9 } } }
+            },
+            scales: {
+                y: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { font: { size: 9 } }, min: 0 },
+                x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+            }
+        }
+    });
+
+    // 3.b Chart Valve Performance: tests vs meta bar/line
+    const ctxValvPerf = document.getElementById('valvPerformanceChart').getContext('2d');
+    const valvTargetRate = phChartIndices.map(() => {
+        const prom = appData.cilindros.summary.rocha_tiempo_prom_valvulas;
+        return prom > 0 ? parseFloat((60 / prom).toFixed(1)) : 21.4;
+    });
+    const actualValvRates = phChartIndices.map(idx => {
+        const valvChanges = appData.cilindros.activities.cambios_valvula[idx];
+        const hrs = appData.ph.daily.horas_valvulas[idx];
+        return hrs > 0 ? parseFloat((valvChanges / hrs).toFixed(2)) : 0.0;
+    });
+
+    charts.valvPerf = new Chart(ctxValvPerf, {
+        type: 'bar',
+        data: {
+            labels: phChartIndices.map(idx => `Día ${idx + 1}`),
+            datasets: [
+                {
+                    label: 'Tasa Registrada (Valv/hr)',
+                    data: actualValvRates,
+                    backgroundColor: 'rgba(249, 115, 22, 0.7)', // Orange
+                    borderRadius: 3,
+                    order: 2
+                },
+                {
+                    label: 'Meta (21.4/hr)',
+                    data: valvTargetRate,
+                    borderColor: '#3b82f6', // Blue
                     borderWidth: 1.5,
                     borderDash: [4, 4],
                     pointStyle: 'none',

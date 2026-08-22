@@ -489,6 +489,12 @@ body {
     gap: 16px;
 }
 
+.grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
 .grid-2col-unequal {
     display: grid;
     grid-template-columns: 2.2fr 1fr;
@@ -540,6 +546,11 @@ body {
 }
 
 .overview-content-layout .grid-2col {
+    flex: 1;
+    min-height: 0;
+}
+
+.overview-content-layout .grid-3col {
     flex: 1;
     min-height: 0;
 }
@@ -1010,4 +1021,6 @@ body {
 @media (max-width: 1200px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .grid-2col-unequal { grid-template-columns: 1fr; }
+    .grid-2col { grid-template-columns: 1fr; }
+    .grid-3col { grid-template-columns: 1fr; }
 }

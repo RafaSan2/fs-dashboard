@@ -45,7 +45,6 @@
                     <i class="fa-solid fa-flask-vial"></i>
                     <span>Pruebas PH</span>
                 </a>
-
             </nav>
 
             <!-- Sidebar footer removed -->
@@ -112,18 +111,6 @@
                             <span class="kpi-subtext">Cumplimiento del 73.9%</span>
                         </div>
                     </div>
-
-                    <div class="kpi-card" id="kpi-lost-hours">
-                        <div class="kpi-header">
-                            <span class="kpi-title">Tiempo Perdido Mto</span>
-                            <div class="kpi-icon icon-orange"><i class="fa-solid fa-hourglass-end"></i></div>
-                        </div>
-                        <div class="kpi-value" id="kpi-lost-hours-value">22.4 <span class="unit">hrs</span></div>
-                        <div class="kpi-footer">
-                            <span class="trend-indicator text-up" id="kpi-lost-days-value"><i class="fa-solid fa-calendar-minus"></i> 2.8 días perdidos</span>
-                            <span class="kpi-subtext">Prom: 0.9 hrs/día</span>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Main Overview Chart & Sub charts layout -->
@@ -137,7 +124,7 @@
                         </div>
                     </div>
 
-                    <div class="grid-2col">
+                    <div class="grid-3col">
                         <div class="card">
                             <div class="card-header flex-header">
                                 <div>
@@ -160,6 +147,18 @@
                             </div>
                             <div class="chart-wrapper-small">
                                 <canvas id="phPerformanceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header flex-header">
+                                <div>
+                                    <h3>Desempeño Mto. Válvulas</h3>
+                                    <p>Rendimiento por hora acumulado L. Rocha</p>
+                                </div>
+                                <span class="badge badge-orange" id="overview-valv-month-badge">Agosto</span>
+                            </div>
+                            <div class="chart-wrapper-small">
+                                <canvas id="valvPerformanceChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -201,31 +200,32 @@
 
                     <!-- Right: Cylinder Specific KPIs & Summary info -->
                     <div class="vertical-cards">
-                        <div class="card highlight-card">
+                        <div class="card summary-card">
                             <div class="card-header">
-                                <span class="highlight-pre">OPERADOR MTO</span>
-                                <h3>Métricas de L. Rocha en Cilindros</h3>
+                                <h3>Comparativa Histórica Mensual</h3>
+                                <p id="cil-comparison-title">Cilindros trabajados: Julio vs Agosto 2026</p>
                             </div>
-                            <div class="metric-block-list">
-                                <div class="metric-row">
-                                    <div class="metric-label">Cilindros Trabajados:</div>
-                                    <div class="metric-val" id="val-rocha-cil">1,850 PH</div>
+                            <div class="comparison-bar-chart">
+                                <div class="comp-row">
+                                    <div class="comp-label" id="cil-comp-label-prev">Julio (Mes Anterior)</div>
+                                    <div class="comp-bar-container">
+                                        <div class="comp-bar bar-blue-light" id="comp-bar-cil-prev" style="width: 0%"></div>
+                                        <span class="comp-val" id="comp-val-cil-prev">0</span>
+                                    </div>
                                 </div>
-                                <div class="metric-row">
-                                    <div class="metric-label">Tiempo por PH:</div>
-                                    <div class="metric-val" id="val-rocha-ph-time">6.0 min</div>
-                                </div>
-                                <div class="metric-row">
-                                    <div class="metric-label">Tiempo Promedio Válvulas:</div>
-                                    <div class="metric-val" id="val-rocha-valv-time">2.8 min</div>
-                                </div>
-                                <div class="metric-row">
-                                    <div class="metric-label">Equivalente PH:</div>
-                                    <div class="metric-val" id="val-rocha-ph-equiv">925 PH equiv</div>
+                                <div class="comp-row">
+                                    <div class="comp-label" id="cil-comp-label-curr">Agosto (Mes Actual)</div>
+                                    <div class="comp-bar-container">
+                                        <div class="comp-bar bar-blue" id="comp-bar-cil-curr" style="width: 0%"></div>
+                                        <span class="comp-val" id="comp-val-cil-curr">0</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="highlight-footer">
-                                <i class="fa-solid fa-circle-info"></i> Nota: Las pruebas de PH trabajadas por Rocha son integradas a su indicador general de productividad de PH.
+                            <div class="monthly-totals">
+                                <div class="total-badge" style="width: 100%;">
+                                    <span class="total-label">Observaciones</span>
+                                    <span class="total-desc" id="cil-comparison-obs">Calculando observaciones de mantenimiento...</span>
+                                </div>
                             </div>
                         </div>
 
@@ -263,13 +263,9 @@
                                 </div>
                             </div>
                             <div class="monthly-totals">
-                                <div class="total-badge">
+                                <div class="total-badge" style="width: 100%;">
                                     <span class="total-label">Objetivo Devalvulados</span>
                                     <span class="total-num" id="val-cil-obj-devalv">1,200</span>
-                                </div>
-                                <div class="total-badge">
-                                    <span class="total-label">Horas Perdidas Prom.</span>
-                                    <span class="total-num" id="val-cil-lost-hours-prom">0.9 hrs</span>
                                 </div>
                             </div>
                         </div>
@@ -373,8 +369,6 @@
                     </div>
                 </div>
             </section>
-
-
         </main>
     </div>
 
