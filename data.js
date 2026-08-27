@@ -992,7 +992,7 @@
                                      }
                   },
     "metadata":  {
-                     "fecha_actualizacion":  "2026-08-27 15:54:11",
+                     "fecha_actualizacion":  "2026-08-27 16:01:00",
                      "fecha_reporte":  "Ago 2026"
                  }
 };
