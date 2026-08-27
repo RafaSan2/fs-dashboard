@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupNavigation();
     setupConnectionForm();
+    
+    // Auto-reload the page every 2 minutes (120,000 ms) to keep data fresh
+    setInterval(() => {
+        location.reload();
+    }, 120000);
 });
 
 /**
