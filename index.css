@@ -260,6 +260,10 @@ body {
     font-size: 10px;
     color: var(--text-secondary);
     opacity: 0.6;
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
 }
 
 /* Main Content Area */
@@ -701,6 +705,7 @@ body {
 }
 
 .bar-blue { background-color: var(--color-blue); }
+.bar-blue-light { background-color: var(--color-blue-light); }
 .bar-teal { background-color: var(--color-teal); }
 .bar-purple { background-color: var(--color-purple); }
 .bar-purple-light { background-color: var(--color-purple-light); }

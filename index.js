@@ -56,11 +56,15 @@ async function initApp() {
     startRotation();
     
     const timeStr = appData.metadata && appData.metadata.fecha_actualizacion 
-        ? appData.metadata.fecha_actualizacion.split(' ')[1] 
-        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        ? appData.metadata.fecha_actualizacion.substring(0, 16) 
+        : new Date().toISOString().replace('T', ' ').substring(0, 16);
     const timeEl = document.getElementById('last-update-time');
     if (timeEl) {
         timeEl.innerText = `Actualizado: ${timeStr}`;
+    }
+    const overviewTimeEl = document.getElementById('overview-update-time');
+    if (overviewTimeEl) {
+        overviewTimeEl.innerText = timeStr;
     }
 }
 
@@ -113,10 +117,14 @@ function setupNavigation() {
                     appData = data;
                     renderDashboard();
                     updateConnectionStatus(true, 'Google Sheets Sincronizado');
-                    const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
                     const timeEl = document.getElementById('last-update-time');
                     if (timeEl) {
                         timeEl.innerText = `Actualizado: ${nowStr}`;
+                    }
+                    const overviewTimeEl = document.getElementById('overview-update-time');
+                    if (overviewTimeEl) {
+                        overviewTimeEl.innerText = nowStr;
                     }
                     showToast('Actualización completada.', 'success', 'Sincronizado');
                     
@@ -251,10 +259,14 @@ function setupConnectionForm() {
             renderDashboard();
             updateConnectionStatus(true, 'Google Sheets Sincronizado');
             
-            const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
             const timeEl = document.getElementById('last-update-time');
             if (timeEl) {
                 timeEl.innerText = `Actualizado: ${nowStr}`;
+            }
+            const overviewTimeEl = document.getElementById('overview-update-time');
+            if (overviewTimeEl) {
+                overviewTimeEl.innerText = nowStr;
             }
             
             showToast('Conectado con éxito a Google Sheets.', 'success', 'Conexión Exitosa');
@@ -280,10 +292,16 @@ function setupConnectionForm() {
         renderDashboard();
         updateConnectionStatus(false, 'Modo Local (Excel)');
         
-        const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const initialTimeStr = appData.metadata && appData.metadata.fecha_actualizacion 
+            ? appData.metadata.fecha_actualizacion.substring(0, 16) 
+            : new Date().toISOString().replace('T', ' ').substring(0, 16);
         const timeEl = document.getElementById('last-update-time');
         if (timeEl) {
-            timeEl.innerText = `Actualizado: ${nowStr}`;
+            timeEl.innerText = `Actualizado: ${initialTimeStr}`;
+        }
+        const overviewTimeEl = document.getElementById('overview-update-time');
+        if (overviewTimeEl) {
+            overviewTimeEl.innerText = initialTimeStr;
         }
         
         showToast('Restablecido a datos locales de Excel.', 'success', 'Restablecido');
@@ -370,13 +388,11 @@ function renderKPIs() {
         phCompLabelCurr.innerText = `${reportMonthOnly} (Mes Actual)`;
     }
 
-    const prodVal = appData.cilindros.summary.prod_mensual_2 || appData.cilindros.summary.prod_mensual_1;
+    const prodVal = appData.cilindros.summary.prod_mensual_1;
     document.getElementById('kpi-cil-value').innerText = formatPercent(prodVal);
     document.getElementById('cil-prod-1-percent').innerText = formatPercent(appData.cilindros.summary.prod_mensual_1);
-    document.getElementById('cil-prod-2-percent').innerText = formatPercent(appData.cilindros.summary.prod_mensual_2);
     
     document.getElementById('cil-prod-1-bar').style.width = formatPercent(appData.cilindros.summary.prod_mensual_1);
-    document.getElementById('cil-prod-2-bar').style.width = formatPercent(appData.cilindros.summary.prod_mensual_2);
     
     const phTotal = appData.ph.summary.rocha_total_pruebas;
     document.getElementById('kpi-ph-value').innerText = phTotal;
@@ -433,17 +449,17 @@ function renderKPIs() {
     if (valCilLostHoursProm) valCilLostHoursProm.innerText = `${lostHoursProm.toFixed(1)} hrs`;
 
     // Sincronizar comparativa histórica de cilindros
-    const cilPrev = appData.cilindros.summary.comparativa_anterior || 0;
-    const cilCurr = appData.cilindros.summary.comparativa_actual || 0;
+    const cilPrev = appData.cilindros.summary.comparativa_anterior_prod || 0.852;
+    const cilCurr = appData.cilindros.summary.prod_mensual_1 || 0;
     
     const compValCilPrev = document.getElementById('comp-val-cil-prev');
-    if (compValCilPrev) compValCilPrev.innerText = formatNumber(cilPrev);
+    if (compValCilPrev) compValCilPrev.innerText = formatPercent(cilPrev);
     const compValCilCurr = document.getElementById('comp-val-cil-curr');
-    if (compValCilCurr) compValCilCurr.innerText = formatNumber(cilCurr);
+    if (compValCilCurr) compValCilCurr.innerText = formatPercent(cilCurr);
 
     const cilComparisonTitle = document.getElementById('cil-comparison-title');
     if (cilComparisonTitle) {
-        cilComparisonTitle.innerText = `Cilindros trabajados: ${prevMonthName} vs ${reportMonthOnly} ${reportYear}`;
+        cilComparisonTitle.innerText = `Productividad Promedio: ${prevMonthName} vs ${reportMonthOnly} ${reportYear}`;
     }
     const cilCompLabelPrev = document.getElementById('cil-comp-label-prev');
     if (cilCompLabelPrev) {
@@ -454,24 +470,23 @@ function renderKPIs() {
         cilCompLabelCurr.innerText = `${reportMonthOnly} (Mes Actual)`;
     }
     
-    const maxCilVal = Math.max(cilPrev, cilCurr);
     const compBarCilPrev = document.getElementById('comp-bar-cil-prev');
     if (compBarCilPrev) {
-        compBarCilPrev.style.width = maxCilVal > 0 ? `${(cilPrev / maxCilVal) * 100}%` : '0%';
+        compBarCilPrev.style.width = `${cilPrev * 100}%`;
     }
     const compBarCilCurr = document.getElementById('comp-bar-cil-curr');
     if (compBarCilCurr) {
-        compBarCilCurr.style.width = maxCilVal > 0 ? `${(cilCurr / maxCilVal) * 100}%` : '0%';
+        compBarCilCurr.style.width = `${cilCurr * 100}%`;
     }
     
     const cilObsEl = document.getElementById('cil-comparison-obs');
     if (cilObsEl) {
         if (cilCurr > cilPrev) {
-            cilObsEl.innerText = "Incremento en las tareas de mantenimiento de cilindros respecto al mes anterior.";
+            cilObsEl.innerText = "Incremento en la productividad promedio respecto al mes anterior.";
         } else if (cilCurr < cilPrev) {
-            cilObsEl.innerText = "Disminución en las tareas de mantenimiento de cilindros respecto al mes anterior.";
+            cilObsEl.innerText = "Disminución en la productividad promedio respecto al mes anterior.";
         } else {
-            cilObsEl.innerText = "Productividad de mantenimiento estable en comparación al mes anterior.";
+            cilObsEl.innerText = "Productividad promedio estable en comparación al mes anterior.";
         }
     }
 }
@@ -499,7 +514,6 @@ function renderTables() {
                 cambios: cilActs.cambios_valvula[i],
                 devalvulado: cilActs.devalvulado[i],
                 valvulado: cilActs.valvulado[i],
-                pulido: cilActs.pulido[i],
                 estandar: cilTimes.tiempo_estandar_total[i],
                 trabajo: cilTimes.tiempo_trabajo[i],
                 prod: cilTimes.productividad[i]
@@ -516,7 +530,6 @@ function renderTables() {
             <td>${row.cambios}</td>
             <td>${row.devalvulado}</td>
             <td>${row.valvulado}</td>
-            <td>${row.pulido}</td>
             <td>${row.estandar.toFixed(2)}</td>
             <td>${row.trabajo.toFixed(2)}</td>
             <td class="cell-percent" style="color: ${getPercentColor(row.prod)}">${formatPercent(row.prod)}</td>
@@ -805,22 +818,13 @@ function initOrUpdateCharts() {
         }
     });
 
-    // 4. Chart Cilindros Daily details (Bar and Line combo)
+    // 4. Chart Cilindros Daily details (Line chart)
     const ctxCilDaily = document.getElementById('cilDailyChart').getContext('2d');
     charts.cilDaily = new Chart(ctxCilDaily, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: cilChartIndices.map(idx => `Día ${idx + 1}`),
             datasets: [
-                {
-                    label: 'T. Perdido (hrs)',
-                    data: cilChartIndices.map(idx => appData.cilindros.daily_times.tiempo_perdido[idx]),
-                    backgroundColor: 'rgba(239, 68, 68, 0.3)',
-                    borderColor: '#ef4444',
-                    borderWidth: 1,
-                    borderRadius: 3,
-                    yAxisID: 'y1'
-                },
                 {
                     label: 'Productividad (%)',
                     data: cilChartIndices.map(idx => appData.cilindros.daily_times.productividad[idx] * 100),
@@ -829,8 +833,7 @@ function initOrUpdateCharts() {
                     pointBackgroundColor: '#3b82f6',
                     pointRadius: 2,
                     tension: 0.4,
-                    type: 'line',
-                    yAxisID: 'y'
+                    fill: false
                 }
             ]
         },
@@ -844,26 +847,17 @@ function initOrUpdateCharts() {
                 y: {
                     type: 'linear',
                     display: true,
-                    position: 'left',
                     grid: { color: 'rgba(255, 255, 255, 0.04)' },
                     ticks: { callback: value => `${value}%`, font: { size: 9 } },
                     min: 0,
                     max: 150
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: { drawOnChartArea: false },
-                    ticks: { callback: value => `${value} hr`, font: { size: 9 } },
-                    min: 0
                 },
                 x: { grid: { display: false }, ticks: { font: { size: 9 } } }
             }
         }
     });
 
-    // 5. Chart PH Daily Details (bar chart)
+    // 5. Chart PH Daily Details (bar chart showing productivity percentage)
     const ctxPhDaily = document.getElementById('phDailyChart').getContext('2d');
     const gradPurpBar = createGradient(ctxPhDaily, 'rgba(139, 92, 246, 0.75)', 'rgba(139, 92, 246, 0.25)');
     charts.phDaily = new Chart(ctxPhDaily, {
@@ -872,8 +866,8 @@ function initOrUpdateCharts() {
             labels: phChartIndices.map(idx => `Día ${idx + 1}`),
             datasets: [
                 {
-                    label: 'Pruebas PH',
-                    data: phChartIndices.map(idx => appData.ph.daily.pruebas_rocha[idx]),
+                    label: 'Productividad (%)',
+                    data: phChartIndices.map(idx => appData.ph.daily.productividad[idx] * 100),
                     backgroundColor: gradPurpBar,
                     borderColor: '#c084fc',
                     borderWidth: 1,
@@ -890,7 +884,9 @@ function initOrUpdateCharts() {
             scales: {
                 y: {
                     grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                    ticks: { font: { size: 9 }, callback: value => `${value} u` }
+                    ticks: { font: { size: 9 }, callback: value => `${value}%` },
+                    min: 0,
+                    max: 120
                 },
                 x: { grid: { display: false }, ticks: { font: { size: 9 } } }
             }

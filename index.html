@@ -47,7 +47,7 @@
                 </a>
             </nav>
 
-            <!-- Sidebar footer removed -->
+            <div class="last-update" id="last-update-time">Actualizado: --:--</div>
         </aside>
 
         <!-- Main Content Area -->
@@ -105,10 +105,17 @@
                             <span class="kpi-title">Tasa Pruebas PH</span>
                             <div class="kpi-icon icon-teal"><i class="fa-solid fa-bolt"></i></div>
                         </div>
-                        <div class="kpi-value" id="kpi-ph-rate-value">7.39 <span class="unit">/ hr</span></div>
+                        <div class="kpi-value" id="kpi-ph-rate-value">8.67 <span class="unit">/ hr</span></div>
                         <div class="kpi-footer">
                             <span class="trend-indicator text-warning" id="kpi-ph-rate-trend"><i class="fa-solid fa-triangle-exclamation"></i> Meta: 10.0 / hr</span>
                             <span class="kpi-subtext">Cumplimiento del 73.9%</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" style="display: flex; flex-direction: column; justify-content: center;">
+                        <div class="total-badge" style="background: transparent; padding: 0; align-items: flex-start;">
+                            <span class="total-label">Actualización</span>
+                            <span class="total-desc" id="overview-update-time" style="text-align: left; margin-top: 4px;">--:--</span>
                         </div>
                     </div>
                 </div>
@@ -185,7 +192,6 @@
                                         <th>Cambios Válvula</th>
                                         <th>Devalvulado</th>
                                         <th>Valvulado</th>
-                                        <th>Pulido</th>
                                         <th>T. Estándar (hr)</th>
                                         <th>T. Trabajo (hr)</th>
                                         <th>Productividad</th>
@@ -236,29 +242,11 @@
                             <div class="progress-list">
                                 <div class="progress-item">
                                     <div class="progress-label">
-                                        <span>Productividad Promedio (Caín)</span>
+                                        <span>Productividad Promedio</span>
                                         <span id="cil-prod-1-percent">79.6%</span>
                                     </div>
                                     <div class="progress-bar-bg">
                                         <div class="progress-bar bar-blue" id="cil-prod-1-bar" style="width: 79.6%"></div>
-                                    </div>
-                                </div>
-                                <div class="progress-item">
-                                    <div class="progress-label">
-                                        <span>Productividad Promedio (Ajustada)</span>
-                                        <span id="cil-prod-2-percent">88.5%</span>
-                                    </div>
-                                    <div class="progress-bar-bg">
-                                        <div class="progress-bar bar-teal" id="cil-prod-2-bar" style="width: 88.5%"></div>
-                                    </div>
-                                </div>
-                                <div class="progress-item">
-                                    <div class="progress-label">
-                                        <span>Cumplimiento Devalvulados</span>
-                                        <span>100%</span>
-                                    </div>
-                                    <div class="progress-bar-bg">
-                                        <div class="progress-bar bar-green" style="width: 100%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -315,7 +303,7 @@
                             </div>
                             <div class="ph-radial-summary">
                                 <div class="rate-large">
-                                    <span class="rate-number" id="ph-rate-metric">7.39</span>
+                                    <span class="rate-number" id="ph-rate-metric">8.67</span>
                                     <span class="rate-unit">pruebas / hora</span>
                                 </div>
                                 <div class="rate-meta">
