@@ -19,11 +19,57 @@ document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
     setupConnectionForm();
     
-    // Auto-reload the page every 2 minutes (120,000 ms) to keep data fresh
+    // Auto-reload data every 2 minutes (120,000 ms) to keep data fresh without reloading DOM
     setInterval(() => {
-        location.reload();
+        reloadData();
     }, 120000);
 });
+
+/**
+ * Re-query data file/source dynamically and update charts and tables
+ */
+async function reloadData() {
+    const isSheets = localStorage.getItem('sheets_connected') === 'true';
+    if (isSheets) {
+        const savedCilUrl = localStorage.getItem(STORAGE_KEY_CIL);
+        const savedPhUrl = localStorage.getItem(STORAGE_KEY_PH);
+        if (savedCilUrl && savedPhUrl) {
+            try {
+                const data = await fetchFromGoogleSheets(savedCilUrl, savedPhUrl);
+                appData = data;
+                renderDashboard();
+                const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+                const timeEl = document.getElementById('last-update-time');
+                if (timeEl) timeEl.innerText = `Actualizado: ${nowStr}`;
+                const overviewTimeEl = document.getElementById('overview-update-time');
+                if (overviewTimeEl) overviewTimeEl.innerText = nowStr;
+            } catch (error) {
+                console.error('Error reloading Sheets data:', error);
+            }
+        }
+    } else {
+        try {
+            const response = await fetch('data.js?t=' + Date.now());
+            const text = await response.text();
+            const jsonStart = text.indexOf('{');
+            const jsonEnd = text.lastIndexOf('}');
+            const jsonText = text.substring(jsonStart, jsonEnd + 1);
+            const newData = JSON.parse(jsonText);
+            appData = newData;
+            renderDashboard();
+            
+            const timeStr = appData.metadata && appData.metadata.fecha_actualizacion 
+                ? appData.metadata.fecha_actualizacion.substring(0, 16) 
+                : new Date().toISOString().replace('T', ' ').substring(0, 16);
+            const timeEl = document.getElementById('last-update-time');
+            if (timeEl) timeEl.innerText = `Actualizado: ${timeStr}`;
+            const overviewTimeEl = document.getElementById('overview-update-time');
+            if (overviewTimeEl) overviewTimeEl.innerText = timeStr;
+        } catch (error) {
+            console.error('Error reloading local data:', error);
+        }
+    }
+}
 
 /**
  * Initialize application data and charts
