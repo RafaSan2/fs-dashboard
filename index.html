@@ -56,7 +56,7 @@
             <header class="main-header">
                 <div class="header-title">
                     <h2>Dashboard de Productividad</h2>
-                    <p>Monitoreo diario de procesos operativos de Mantenimiento y Calidad</p>
+                    <p>Monitoreo diario de procesos operativos de Mantenimiento y PH</p>
                 </div>
                 <div class="header-actions">
                     <!-- Rotation Pause/Play indicator badge -->
@@ -115,7 +115,7 @@
                     <div class="kpi-card" style="display: flex; flex-direction: column; justify-content: center;">
                         <div class="total-badge" style="background: transparent; padding: 0; align-items: flex-start;">
                             <span class="total-label">Actualización</span>
-                            <span class="total-desc" id="overview-update-time" style="text-align: left; margin-top: 4px;">--:--</span>
+                            <span class="total-desc" id="overview-update-time" style="text-align: left; margin-top: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">--:--</span>
                         </div>
                     </div>
                 </div>
@@ -160,9 +160,9 @@
                             <div class="card-header flex-header">
                                 <div>
                                     <h3>Desempeño Mto. Válvulas</h3>
-                                    <p>Rendimiento por hora acumulado L. Rocha</p>
+                                    <p>Porcentaje de cumplimiento diario vs meta</p>
                                 </div>
-                                <span class="badge badge-orange" id="overview-valv-month-badge">Agosto</span>
+                                <span class="badge badge-green" id="overview-valv-month-badge">Agosto</span>
                             </div>
                             <div class="chart-wrapper-small">
                                 <canvas id="valvPerformanceChart"></canvas>
@@ -239,21 +239,15 @@
                             <div class="card-header">
                                 <h3>Resumen Mensual de Cilindros</h3>
                             </div>
-                            <div class="progress-list">
+                            <div class="progress-list" style="margin: auto 0; padding: 12px 0;">
                                 <div class="progress-item">
-                                    <div class="progress-label">
+                                    <div class="progress-label" style="margin-bottom: 6px; font-size: 12px; font-weight: 600;">
                                         <span>Productividad Promedio</span>
-                                        <span id="cil-prod-1-percent">79.6%</span>
+                                        <span id="cil-prod-1-percent" style="font-size: 14px; font-weight: 700; color: var(--color-blue-light);">79.6%</span>
                                     </div>
-                                    <div class="progress-bar-bg">
-                                        <div class="progress-bar bar-blue" id="cil-prod-1-bar" style="width: 79.6%"></div>
+                                    <div class="progress-bar-bg" style="height: 8px;">
+                                        <div class="progress-bar bar-blue" id="cil-prod-1-bar" style="width: 79.6%; height: 8px;"></div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="monthly-totals">
-                                <div class="total-badge" style="width: 100%;">
-                                    <span class="total-label">Objetivo Devalvulados</span>
-                                    <span class="total-num" id="val-cil-obj-devalv">1,200</span>
                                 </div>
                             </div>
                         </div>

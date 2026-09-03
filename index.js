@@ -38,18 +38,25 @@ async function reloadData() {
                 const data = await fetchFromGoogleSheets(savedCilUrl, savedPhUrl);
                 appData = data;
                 renderDashboard();
-                const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+                const nowFormatted = formatDateTime(new Date());
                 const timeEl = document.getElementById('last-update-time');
-                if (timeEl) timeEl.innerText = `Actualizado: ${nowStr}`;
+                if (timeEl) timeEl.innerText = `Actualizado: ${nowFormatted}`;
                 const overviewTimeEl = document.getElementById('overview-update-time');
-                if (overviewTimeEl) overviewTimeEl.innerText = nowStr;
+                if (overviewTimeEl) {
+                    overviewTimeEl.innerText = nowFormatted;
+                }
             } catch (error) {
                 console.error('Error reloading Sheets data:', error);
             }
         }
     } else {
         try {
-            const response = await fetch('data.js?t=' + Date.now());
+            let response;
+            try {
+                response = await fetch('C:/FS/data.js?t=' + Date.now());
+            } catch (e) {
+                response = await fetch('data.js?t=' + Date.now());
+            }
             const text = await response.text();
             const jsonStart = text.indexOf('{');
             const jsonEnd = text.lastIndexOf('}');
@@ -58,13 +65,16 @@ async function reloadData() {
             appData = newData;
             renderDashboard();
             
-            const timeStr = appData.metadata && appData.metadata.fecha_actualizacion 
-                ? appData.metadata.fecha_actualizacion.substring(0, 16) 
-                : new Date().toISOString().replace('T', ' ').substring(0, 16);
+            const rawTime = appData.metadata && appData.metadata.fecha_actualizacion 
+                ? appData.metadata.fecha_actualizacion 
+                : new Date();
+            const formattedTime = formatDateTime(rawTime);
             const timeEl = document.getElementById('last-update-time');
-            if (timeEl) timeEl.innerText = `Actualizado: ${timeStr}`;
+            if (timeEl) timeEl.innerText = `Actualizado: ${formattedTime}`;
             const overviewTimeEl = document.getElementById('overview-update-time');
-            if (overviewTimeEl) overviewTimeEl.innerText = timeStr;
+            if (overviewTimeEl) {
+                overviewTimeEl.innerText = formattedTime;
+            }
         } catch (error) {
             console.error('Error reloading local data:', error);
         }
@@ -106,16 +116,17 @@ async function initApp() {
     renderDashboard();
     startRotation();
     
-    const timeStr = appData.metadata && appData.metadata.fecha_actualizacion 
-        ? appData.metadata.fecha_actualizacion.substring(0, 16) 
-        : new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const rawTime = appData.metadata && appData.metadata.fecha_actualizacion 
+        ? appData.metadata.fecha_actualizacion 
+        : new Date();
+    const formattedTime = formatDateTime(rawTime);
     const timeEl = document.getElementById('last-update-time');
     if (timeEl) {
-        timeEl.innerText = `Actualizado: ${timeStr}`;
+        timeEl.innerText = `Actualizado: ${formattedTime}`;
     }
     const overviewTimeEl = document.getElementById('overview-update-time');
     if (overviewTimeEl) {
-        overviewTimeEl.innerText = timeStr;
+        overviewTimeEl.innerText = formattedTime;
     }
 }
 
@@ -168,14 +179,14 @@ function setupNavigation() {
                     appData = data;
                     renderDashboard();
                     updateConnectionStatus(true, 'Google Sheets Sincronizado');
-                    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+                    const nowFormatted = formatDateTime(new Date());
                     const timeEl = document.getElementById('last-update-time');
                     if (timeEl) {
-                        timeEl.innerText = `Actualizado: ${nowStr}`;
+                        timeEl.innerText = `Actualizado: ${nowFormatted}`;
                     }
                     const overviewTimeEl = document.getElementById('overview-update-time');
                     if (overviewTimeEl) {
-                        overviewTimeEl.innerText = nowStr;
+                        overviewTimeEl.innerText = nowFormatted;
                     }
                     showToast('Actualización completada.', 'success', 'Sincronizado');
                     
@@ -310,14 +321,14 @@ function setupConnectionForm() {
             renderDashboard();
             updateConnectionStatus(true, 'Google Sheets Sincronizado');
             
-            const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+            const nowFormatted = formatDateTime(new Date());
             const timeEl = document.getElementById('last-update-time');
             if (timeEl) {
-                timeEl.innerText = `Actualizado: ${nowStr}`;
+                timeEl.innerText = `Actualizado: ${nowFormatted}`;
             }
             const overviewTimeEl = document.getElementById('overview-update-time');
             if (overviewTimeEl) {
-                overviewTimeEl.innerText = nowStr;
+                overviewTimeEl.innerText = nowFormatted;
             }
             
             showToast('Conectado con éxito a Google Sheets.', 'success', 'Conexión Exitosa');
@@ -343,16 +354,17 @@ function setupConnectionForm() {
         renderDashboard();
         updateConnectionStatus(false, 'Modo Local (Excel)');
         
-        const initialTimeStr = appData.metadata && appData.metadata.fecha_actualizacion 
-            ? appData.metadata.fecha_actualizacion.substring(0, 16) 
-            : new Date().toISOString().replace('T', ' ').substring(0, 16);
+        const initialRaw = appData.metadata && appData.metadata.fecha_actualizacion 
+            ? appData.metadata.fecha_actualizacion 
+            : new Date();
+        const initialFormatted = formatDateTime(initialRaw);
         const timeEl = document.getElementById('last-update-time');
         if (timeEl) {
-            timeEl.innerText = `Actualizado: ${initialTimeStr}`;
+            timeEl.innerText = `Actualizado: ${initialFormatted}`;
         }
         const overviewTimeEl = document.getElementById('overview-update-time');
         if (overviewTimeEl) {
-            overviewTimeEl.innerText = initialTimeStr;
+            overviewTimeEl.innerText = initialFormatted;
         }
         
         showToast('Restablecido a datos locales de Excel.', 'success', 'Restablecido');
@@ -819,34 +831,35 @@ function initOrUpdateCharts() {
         }
     });
 
-    // 3.b Chart Valve Performance: tests vs meta bar/line
+    // 3.b Chart Valve Performance: Cilindros cumplimiento diario vs meta (recuadro verde Excel)
     const ctxValvPerf = document.getElementById('valvPerformanceChart').getContext('2d');
-    const valvTargetRate = phChartIndices.map(() => {
-        const prom = appData.cilindros.summary.rocha_tiempo_prom_valvulas;
-        return prom > 0 ? parseFloat((60 / prom).toFixed(1)) : 21.4;
-    });
-    const actualValvRates = phChartIndices.map(idx => {
-        const valvChanges = appData.cilindros.activities.cambios_valvula[idx];
-        const hrs = appData.ph.daily.horas_valvulas[idx];
-        return hrs > 0 ? parseFloat((valvChanges / hrs).toFixed(2)) : 0.0;
+    const targetCompliancePct = appData.cilindros.summary && appData.cilindros.summary.porcentaje_objetivo
+        ? parseFloat((appData.cilindros.summary.porcentaje_objetivo * 100).toFixed(1))
+        : 105.0;
+    const metaComplianceLine = cilChartIndices.map(() => targetCompliancePct);
+    const dailyComplianceRates = cilChartIndices.map(idx => {
+        const prod = appData.cilindros.daily_times.productividad[idx] || 0;
+        return parseFloat((prod * 100).toFixed(1));
     });
 
     charts.valvPerf = new Chart(ctxValvPerf, {
         type: 'bar',
         data: {
-            labels: phChartIndices.map(idx => `Día ${idx + 1}`),
+            labels: cilChartIndices.map(idx => `Día ${idx + 1}`),
             datasets: [
                 {
-                    label: 'Tasa Registrada (Valv/hr)',
-                    data: actualValvRates,
-                    backgroundColor: 'rgba(249, 115, 22, 0.7)', // Orange
+                    label: 'Cumplimiento (%)',
+                    data: dailyComplianceRates,
+                    backgroundColor: 'rgba(16, 185, 129, 0.75)', // Verde / Esmeralda
+                    borderColor: '#10b981',
+                    borderWidth: 1,
                     borderRadius: 3,
                     order: 2
                 },
                 {
-                    label: 'Meta (21.4/hr)',
-                    data: valvTargetRate,
-                    borderColor: '#3b82f6', // Blue
+                    label: `Meta (${targetCompliancePct}%)`,
+                    data: metaComplianceLine,
+                    borderColor: '#3b82f6', // Línea meta azul
                     borderWidth: 1.5,
                     borderDash: [4, 4],
                     pointStyle: 'none',
@@ -860,10 +873,22 @@ function initOrUpdateCharts() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'top', labels: { boxWidth: 8, font: { size: 9 } } }
+                legend: { position: 'top', labels: { boxWidth: 8, font: { size: 9 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return `${ctx.dataset.label}: ${ctx.raw}%`;
+                        }
+                    }
+                }
             },
             scales: {
-                y: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { font: { size: 9 } }, min: 0 },
+                y: {
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: { callback: value => `${value}%`, font: { size: 9 } },
+                    min: 0,
+                    suggestedMax: 120
+                },
                 x: { grid: { display: false }, ticks: { font: { size: 9 } } }
             }
         }
@@ -1161,6 +1186,48 @@ function formatDisplayDate(dateStr) {
     if (str.includes('-')) {
         const parts = str.split('-');
         return `${parts[2]}/${parts[1]}`;
+    }
+    return str;
+}
+
+function formatDateTime(raw) {
+    if (!raw) {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        const s = String(d.getSeconds()).padStart(2, '0');
+        return `${y}/${m}/${day} ${h}:${min}:${s}`;
+    }
+    const str = String(raw).trim();
+    if (/^\d{4}[-\/]\d{2}[-\/]\d{2}[ T]\d{2}:\d{2}(:\d{2})?/.test(str)) {
+        const parts = str.replace('T', ' ').split(' ');
+        const datePart = parts[0].replace(/-/g, '/');
+        let timePart = parts[1] || '00:00:00';
+        if (timePart.length === 5) timePart += ':00';
+        else timePart = timePart.substring(0, 8);
+        return `${datePart} ${timePart}`;
+    }
+    if (/^\d{14}$/.test(str)) {
+        const y = str.substring(0, 4);
+        const m = str.substring(4, 6);
+        const d = str.substring(6, 8);
+        const h = str.substring(8, 10);
+        const min = str.substring(10, 12);
+        const s = str.substring(12, 14);
+        return `${y}/${m}/${d} ${h}:${min}:${s}`;
+    }
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+        const y = parsed.getFullYear();
+        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+        const day = String(parsed.getDate()).padStart(2, '0');
+        const h = String(parsed.getHours()).padStart(2, '0');
+        const min = String(parsed.getMinutes()).padStart(2, '0');
+        const s = String(parsed.getSeconds()).padStart(2, '0');
+        return `${y}/${m}/${day} ${h}:${min}:${s}`;
     }
     return str;
 }
