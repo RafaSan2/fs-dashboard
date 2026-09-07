@@ -335,7 +335,7 @@
                "summary":  {
                                "total_horas":  126.95,
                                "rocha_total_pruebas":  1195,
-                               "cumplimiento":  0,
+                               "cumplimiento":  0.910997489424776,
                                "comparativa_agosto":  1195,
                                "ph_por_hora":  9.41315478534856,
                                "meta_por_hora":  10,
@@ -789,7 +789,7 @@
                                       "prod_nota":  null,
                                       "rocha_tiempo_ph":  0,
                                       "porcentaje_cumplimiento":  0.92530428435761525,
-                                      "comparativa_anterior_prod":  0.853903118465072,
+                                      "comparativa_anterior_prod":  0.976981932732909,
                                       "comparativa_actual":  4313,
                                       "objetivo_devalvulados":  80
                                   },
@@ -1094,7 +1094,7 @@
                                      }
                   },
     "metadata":  {
-                     "fecha_actualizacion":  "2026-09-04 11:34:16",
+                     "fecha_actualizacion":  "2026-09-07 11:49:52",
                      "fecha_reporte":  "Ago 2026"
                  }
 };
