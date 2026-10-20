@@ -339,7 +339,7 @@
                                "comparativa_agosto":  850,
                                "ph_por_hora":  9.09577314071696,
                                "meta_por_hora":  10,
-                               "comparativa_julio":  850
+                               "comparativa_julio":  1306
                            }
            },
     "cilindros":  {
@@ -778,12 +778,12 @@
                                       "comparativa_anterior":  4573,
                                       "comparativa_anterior_prod":  1.0529,
                                       "porcentaje_objetivo":  1.05,
-                                      "porcentaje_real":  0,
+                                      "porcentaje_real":  0.590900938080522,
                                       "total_horas_perdidas":  0,
                                       "prod_nota":  null,
                                       "rocha_tiempo_ph":  0,
                                       "rocha_ph_equiv":  0,
-                                      "porcentaje_cumplimiento":  0,
+                                      "porcentaje_cumplimiento":  0.56276279817192576,
                                       "rocha_cil_trabajados":  0,
                                       "total_dias_perdidos":  0,
                                       "comparativa_actual":  2641,
@@ -791,8 +791,8 @@
                                       "objetivo_devalvulados":  0,
                                       "prom_horas_perdidas":  0.979157215481107,
                                       "prod_mensual_2":  0.590900938080522,
-                                      "comparativa_actual_prod":  0,
-                                      "prod_mensual_1":  0
+                                      "comparativa_actual_prod":  0.590900938080522,
+                                      "prod_mensual_1":  0.590900938080522
                                   },
                       "activities":  {
                                          "devalvulado":  [
@@ -1095,7 +1095,7 @@
                                      }
                   },
     "metadata":  {
-                     "fecha_actualizacion":  "2026-10-20 11:28:20",
+                     "fecha_actualizacion":  "2026-10-20 12:24:56",
                      "fecha_reporte":  "Oct 2026"
                  }
 };

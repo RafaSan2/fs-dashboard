@@ -479,12 +479,18 @@ function renderKPIs() {
     const phMeta = appData.ph.summary.meta_por_hora || 10.0;
     const phCumplimiento = appData.ph.summary.cumplimiento || (phMeta > 0 ? phRate / phMeta : 0);
     document.getElementById('kpi-ph-rate-value').innerHTML = `${phRate.toFixed(2)} <span class="unit">/ hr</span>`;
-    document.getElementById('kpi-ph-rate-trend').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Meta: ${phMeta.toFixed(1)} / hr`;
+    const kpiPhRateTrend = document.getElementById('kpi-ph-rate-trend');
+    if (kpiPhRateTrend) {
+        const isUp = phRate >= phMeta;
+        kpiPhRateTrend.className = `trend-indicator ${isUp ? 'text-up' : 'text-warning'}`;
+        kpiPhRateTrend.innerHTML = `<i class="fa-solid ${isUp ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> Meta: ${phMeta.toFixed(1)} / hr`;
+    }
     document.getElementById('kpi-ph-efficiency').querySelector('.kpi-subtext').innerText = `Cumplimiento del ${formatPercent(phCumplimiento)}`;
     
     document.getElementById('ph-rate-metric').innerText = phRate.toFixed(2);
     document.getElementById('val-ph-cumplimiento').innerText = formatPercent(phCumplimiento);
-    document.getElementById('val-ph-total-hours').innerText = `${appData.ph.summary.total_horas.toFixed(1)} hrs`;
+    const totalHoursPh = appData.ph.summary.total_horas !== undefined ? appData.ph.summary.total_horas : (appData.ph.summary.total_hours || 0);
+    document.getElementById('val-ph-total-hours').innerText = `${totalHoursPh.toFixed(1)} hrs`;
     
     const lostHours = appData.cilindros.summary.total_horas_perdidas;
     const lostDays = appData.cilindros.summary.total_dias_perdidos;
@@ -569,7 +575,8 @@ function renderTables() {
     const activeCilRows = [];
     for (let i = 0; i < cilDates.length; i++) {
         const hasWork = cilTimes.tiempo_trabajo[i] > 0 || cilTimes.tiempo_estandar_total[i] > 0;
-        const totalActs = cilActs.cambios_valvula[i] + cilActs.devalvulado[i] + cilActs.valvulado[i] + cilActs.pulido[i] + cilActs.cambio_disco[i] + cilActs.revision_interna[i] + cilActs.lavado_contaminados[i];
+        const lavado = (cilActs.lavado_contaminados && cilActs.lavado_contaminados[i]) || (cilActs.lavado_cil && cilActs.lavado_cil[i]) || 0;
+        const totalActs = (cilActs.cambios_valvula[i] || 0) + (cilActs.devalvulado[i] || 0) + (cilActs.valvulado[i] || 0) + (cilActs.pulido[i] || 0) + (cilActs.cambio_disco[i] || 0) + (cilActs.revision_interna[i] || 0) + lavado;
         
         if (hasWork || totalActs > 0) {
             activeCilRows.push({
@@ -613,13 +620,13 @@ function renderTables() {
         if (hasWork) {
             activePhRows.push({
                 date: formatDisplayDate(phDates[i]),
-                tests: phDaily.pruebas_rocha[i],
-                valv: phDaily.horas_valvulas[i],
-                paro: phDaily.horas_paro_mmto[i],
-                cap: phDaily.capacitacion[i],
-                estandar: phDaily.tiempo_estandar[i],
-                prodTime: phDaily.tiempo_productivo[i],
-                prod: phDaily.productividad[i]
+                tests: (phDaily.pruebas_rocha && phDaily.pruebas_rocha[i]) || 0,
+                valv: (phDaily.horas_valvulas && phDaily.horas_valvulas[i]) || 0,
+                paro: (phDaily.horas_paro_mmto && phDaily.horas_paro_mmto[i]) || 0,
+                cap: (phDaily.capacitacion && phDaily.capacitacion[i]) || 0,
+                estandar: (phDaily.tiempo_estandar && phDaily.tiempo_estandar[i]) || 0,
+                prodTime: (phDaily.tiempo_productivo && phDaily.tiempo_productivo[i]) || 0,
+                prod: (phDaily.productividad && phDaily.productividad[i]) || 0
             });
         }
     }
@@ -657,44 +664,68 @@ function initOrUpdateCharts() {
         }
     });
     
-    const cilActiveIndices = [];
-    appData.cilindros.dates.forEach((d, idx) => {
-        if (appData.cilindros.daily_times.tiempo_trabajo[idx] > 0) cilActiveIndices.push(idx);
-    });
-    
-    const phActiveIndices = [];
-    appData.ph.dates.forEach((d, idx) => {
-        if (appData.ph.daily.tiempo_dia[idx] > 0) phActiveIndices.push(idx);
-    });
-    
-    // Create subset of max last 15 active days for cleaner charting
-    const maxChartDays = 15;
-    const cilChartIndices = cilActiveIndices.slice(-maxChartDays);
-    const phChartIndices = phActiveIndices.slice(-maxChartDays);
-    
-    // Combine labels for unified chart (last 15 days of activity)
-    const unionLabels = [];
-    for (let i = 1; i <= 31; i++) {
-        if (cilChartIndices.includes(i-1) || phChartIndices.includes(i-1)) {
-            unionLabels.push(`Día ${i}`);
+    // Determinar el ultimo dia con datos reales (o hasta el dia de hoy si estamos en el mes en curso)
+    const totalDays = Math.max(
+        (appData.cilindros && appData.cilindros.dates) ? appData.cilindros.dates.length : 0,
+        (appData.ph && appData.ph.dates) ? appData.ph.dates.length : 0,
+        31
+    );
+
+    let lastDataDayIdx = -1;
+    for (let i = totalDays - 1; i >= 0; i--) {
+        const hasCil = (appData.cilindros && appData.cilindros.daily_times && appData.cilindros.daily_times.productividad && appData.cilindros.daily_times.productividad[i] > 0) ||
+                       (appData.cilindros && appData.cilindros.daily_times && appData.cilindros.daily_times.tiempo_estandar_total && appData.cilindros.daily_times.tiempo_estandar_total[i] > 0) ||
+                       (appData.cilindros && appData.cilindros.activities && appData.cilindros.activities.valvulado && appData.cilindros.activities.valvulado[i] > 0) ||
+                       (appData.cilindros && appData.cilindros.activities && appData.cilindros.activities.devalvulado && appData.cilindros.activities.devalvulado[i] > 0) ||
+                       (appData.cilindros && appData.cilindros.activities && appData.cilindros.activities.cambios_valvula && appData.cilindros.activities.cambios_valvula[i] > 0);
+
+        const hasPh = (appData.ph && appData.ph.daily && appData.ph.daily.productividad && appData.ph.daily.productividad[i] > 0) ||
+                      (appData.ph && appData.ph.daily && appData.ph.daily.pruebas_rocha && appData.ph.daily.pruebas_rocha[i] > 0) ||
+                      (appData.ph && appData.ph.daily && appData.ph.daily.tiempo_estandar && appData.ph.daily.tiempo_estandar[i] > 0);
+
+        if (hasCil || hasPh) {
+            lastDataDayIdx = i;
+            break;
         }
     }
+
+    const todayDate = new Date();
+    let maxDayIdx = lastDataDayIdx >= 0 ? lastDataDayIdx : 0;
     
-    if (unionLabels.length === 0) {
-        for (let i = 1; i <= 10; i++) unionLabels.push(`Día ${i}`);
+    // Si el reporte corresponde al mes en curso, asegurar que cubra al menos hasta el dia actual
+    const reportMonthStr = (appData.metadata && appData.metadata.fecha_reporte ? appData.metadata.fecha_reporte : '').toLowerCase();
+    const monthsShort = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const currentMonthShort = monthsShort[todayDate.getMonth()];
+    if (reportMonthStr.includes(currentMonthShort)) {
+        const todayDayIdx = todayDate.getDate() - 1;
+        if (todayDayIdx > maxDayIdx) {
+            maxDayIdx = todayDayIdx;
+        }
     }
-    
-    const unionCilProd = unionLabels.map(lbl => {
-        const dayNum = parseInt(lbl.split(' ')[1]) - 1;
-        return appData.cilindros.daily_times.tiempo_trabajo[dayNum] > 0 
-            ? appData.cilindros.daily_times.productividad[dayNum] * 100 
-            : null;
+
+    if (maxDayIdx < 0) maxDayIdx = 0;
+    if (maxDayIdx >= totalDays) maxDayIdx = totalDays - 1;
+
+    // Generar indices continuos desde el Dia 1 (indice 0) hasta el ultimo dia con datos / dia actual
+    const chartIndices = [];
+    for (let i = 0; i <= maxDayIdx; i++) {
+        chartIndices.push(i);
+    }
+
+    const cilChartIndices = chartIndices;
+    const phChartIndices = chartIndices;
+    const unionLabels = chartIndices.map(idx => `Día ${idx + 1}`);
+
+    const unionCilProd = chartIndices.map(dayNum => {
+        const hasWork = (appData.cilindros.daily_times.tiempo_trabajo[dayNum] > 0 || appData.cilindros.daily_times.tiempo_estandar_total[dayNum] > 0) &&
+                        (appData.cilindros.daily_times.productividad[dayNum] > 0 || appData.cilindros.daily_times.tiempo_estandar_total[dayNum] > 0);
+        return hasWork ? appData.cilindros.daily_times.productividad[dayNum] * 100 : null;
     });
-    const unionPhProd = unionLabels.map(lbl => {
-        const dayNum = parseInt(lbl.split(' ')[1]) - 1;
-        return appData.ph.daily.tiempo_dia[dayNum] > 0 
-            ? appData.ph.daily.productividad[dayNum] * 100 
-            : null;
+
+    const unionPhProd = chartIndices.map(dayNum => {
+        const hasWork = (appData.ph.daily.tiempo_dia[dayNum] > 0 || appData.ph.daily.tiempo_productivo[dayNum] > 0) &&
+                        (appData.ph.daily.productividad[dayNum] > 0 || appData.ph.daily.pruebas_rocha[dayNum] > 0);
+        return hasWork ? appData.ph.daily.productividad[dayNum] * 100 : null;
     });
 
     // 1. Chart Vista General: Line Chart
