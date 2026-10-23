@@ -51,12 +51,8 @@ async function reloadData() {
         }
     } else {
         try {
-            let response;
-            try {
-                response = await fetch('C:/FS/data.js?t=' + Date.now());
-            } catch (e) {
-                response = await fetch('data.js?t=' + Date.now());
-            }
+            // data.js vive junto a index.html (misma carpeta); sin rutas absolutas
+            const response = await fetch('data.js?t=' + Date.now());
             const text = await response.text();
             const jsonStart = text.indexOf('{');
             const jsonEnd = text.lastIndexOf('}');
@@ -422,6 +418,7 @@ function renderKPIs() {
     if (reportPeriodEl) {
         reportPeriodEl.innerText = reportDateStr;
     }
+    document.title = `Dashboard de Productividad Operacional - ${reportDateStr}`;
     
     // Update Vista General badges dynamically
     const cilMonthBadge = document.getElementById('overview-cil-month-badge');
@@ -461,7 +458,7 @@ function renderKPIs() {
     document.getElementById('kpi-ph-value').innerText = phTotal;
     document.getElementById('val-ph-total-tests').innerText = phTotal;
     
-    const julyTests = appData.ph.summary.comparativa_julio || 1273;
+    const julyTests = appData.ph.summary.comparativa_julio || 0;
     const augustTests = appData.ph.summary.comparativa_agosto || phTotal;
     document.getElementById('comp-val-july').innerText = formatNumber(julyTests);
     document.getElementById('comp-val-august').innerText = formatNumber(augustTests);
@@ -478,7 +475,7 @@ function renderKPIs() {
     const phRate = appData.ph.summary.ph_por_hora;
     const phMeta = appData.ph.summary.meta_por_hora || 10.0;
     const phCumplimiento = appData.ph.summary.cumplimiento || (phMeta > 0 ? phRate / phMeta : 0);
-    document.getElementById('kpi-ph-rate-value').innerHTML = `${phRate.toFixed(2)} <span class="unit">/ hr</span>`;
+    document.getElementById('kpi-ph-rate-value').innerHTML = `${phRate.toFixed(1)} <span class="unit">/ hr</span>`;
     const kpiPhRateTrend = document.getElementById('kpi-ph-rate-trend');
     if (kpiPhRateTrend) {
         const isUp = phRate >= phMeta;
@@ -487,10 +484,10 @@ function renderKPIs() {
     }
     document.getElementById('kpi-ph-efficiency').querySelector('.kpi-subtext').innerText = `Cumplimiento del ${formatPercent(phCumplimiento)}`;
     
-    document.getElementById('ph-rate-metric').innerText = phRate.toFixed(2);
+    document.getElementById('ph-rate-metric').innerText = phRate.toFixed(1);
     document.getElementById('val-ph-cumplimiento').innerText = formatPercent(phCumplimiento);
     const totalHoursPh = appData.ph.summary.total_horas !== undefined ? appData.ph.summary.total_horas : (appData.ph.summary.total_hours || 0);
-    document.getElementById('val-ph-total-hours').innerText = `${totalHoursPh.toFixed(1)} hrs`;
+    document.getElementById('val-ph-total-hours').innerText = `${formatNumber(totalHoursPh)} hrs`;
     
     const lostHours = appData.cilindros.summary.total_horas_perdidas;
     const lostDays = appData.cilindros.summary.total_dias_perdidos;
@@ -518,7 +515,7 @@ function renderKPIs() {
     if (valCilLostHoursProm) valCilLostHoursProm.innerText = `${lostHoursProm.toFixed(1)} hrs`;
 
     // Sincronizar comparativa histórica de cilindros
-    const cilPrev = appData.cilindros.summary.comparativa_anterior_prod || 0.852;
+    const cilPrev = appData.cilindros.summary.comparativa_anterior_prod || 0;
     const cilCurr = appData.cilindros.summary.prod_mensual_1 || 0;
     
     const compValCilPrev = document.getElementById('comp-val-cil-prev');
@@ -574,11 +571,11 @@ function renderTables() {
     
     const activeCilRows = [];
     for (let i = 0; i < cilDates.length; i++) {
-        const hasWork = cilTimes.tiempo_trabajo[i] > 0 || cilTimes.tiempo_estandar_total[i] > 0;
+        const hasStdTime = (cilTimes.tiempo_estandar_total[i] || 0) > 0;
         const lavado = (cilActs.lavado_contaminados && cilActs.lavado_contaminados[i]) || (cilActs.lavado_cil && cilActs.lavado_cil[i]) || 0;
-        const totalActs = (cilActs.cambios_valvula[i] || 0) + (cilActs.devalvulado[i] || 0) + (cilActs.valvulado[i] || 0) + (cilActs.pulido[i] || 0) + (cilActs.cambio_disco[i] || 0) + (cilActs.revision_interna[i] || 0) + lavado;
+        const totalActs = (cilActs.cambios_valvula[i] || 0) + (cilActs.devalvulado[i] || 0) + (cilActs.valvulado[i] || 0) + (cilActs.pulido[i] || 0) + (cilActs.cambio_disco[i] || 0) + ((cilActs.revision_interna && cilActs.revision_interna[i]) || 0) + lavado;
         
-        if (hasWork || totalActs > 0) {
+        if (hasStdTime || totalActs > 0) {
             activeCilRows.push({
                 date: formatDisplayDate(cilDates[i]),
                 cambios: cilActs.cambios_valvula[i],
@@ -591,7 +588,7 @@ function renderTables() {
         }
     }
     
-    // Take ONLY the last 10 rows to fit screen height perfectly
+    // Take ONLY the last 10 days WITH information (a day with only planned shift hours does not count)
     const visibleCilRows = activeCilRows.slice(-10);
     visibleCilRows.forEach(row => {
         const tr = document.createElement('tr');

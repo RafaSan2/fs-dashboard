@@ -1,6 +1,6 @@
 @echo off
-title Publicar FS Dashboard
-cd /d C:\FS
+title Publicar FSC Dashboard
+cd /d C:\FSC
 
 echo ==========================================
 echo       PUBLICANDO FS DASHBOARD
